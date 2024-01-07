@@ -1,0 +1,46 @@
+.title {
+  padding-top: 3rem;
+  text-align: center;
+}
+
+.options-box {
+  padding: 1rem 0 1rem 0;
+}
+
+.input-box {
+  padding-top: 1rem;
+  padding-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .input-weight-box {
+    margin-left: 1rem;
+  }
+
+  .input-weight-adjust-box {
+    padding-top: 1rem;
+    margin-left: 1rem;
+  }
+
+}
+
+.plates-container-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0;
+  /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  /* Firefox */
+}

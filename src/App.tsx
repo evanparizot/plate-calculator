@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Button, ButtonGroup, Chip, Grid, InputAdornment, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Accordion, Box, Button, ButtonGroup, Chip, Divider, Grid, InputAdornment, Paper, TextField, ThemeProvider, ToggleButton, ToggleButtonGroup, Typography, styled } from '@mui/material';
 
-import './App.css';
+import './App.scss';
 
 function App() {
   enum WeightUnit {
@@ -42,7 +42,7 @@ function App() {
       { weight: 25, color: '#000000' },
       { weight: 10, color: '#000000' },
       { weight: 5, color: '#000000' },
-      { weight: 2.5, color: '#000000'}
+      { weight: 2.5, color: '#000000' }
     ]],
     [WeightUnit.kgs, [
       { weight: 25, color: '#fc0303' },
@@ -82,9 +82,21 @@ function App() {
     setInputWeight(inputWeight + adjustment);
   }
 
-  const normalize = (input: string) => {
-
-  }
+  const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+    '& .MuiToggleButtonGroup-grouped': {
+      margin: theme.spacing(0.5),
+      border: 0,
+      '&.Mui-disabled': {
+        border: 0,
+      },
+      '&:not(:first-of-type)': {
+        borderRadius: theme.shape.borderRadius,
+      },
+      '&:first-of-type': {
+        borderRadius: theme.shape.borderRadius,
+      },
+    },
+  }));
 
   const calculate = (target: number, plates: PlateInformation[]): PlateInformation[] => {
     let res: PlateInformation[] = [];
@@ -121,25 +133,14 @@ function App() {
   }, [inputWeight, inputWeightUnit, availableWeightUnit, barbell]);
 
   return (
-    <Grid container spacing={2}>
-      <Grid xs></Grid>
-      <Grid xs={6}>
+    <Grid container spacing={2} alignItems={'center'} justifyContent={'center'}>
+      <Grid item xs={10} sm={6} md={6} lg={4} xl={4}>
         <div className='title'>
-          <h1>Plate Calculator</h1>
+          <Typography variant='h2' gutterBottom>
+            Plate Calculator
+          </Typography>
         </div>
-        <div className="available-box">
-          Available Plate Units
-          <ToggleButtonGroup color='primary' exclusive value={availableWeightUnit} onChange={newAvailableWeightUnit}>
-            <ToggleButton value={WeightUnit.lbs}>LBs</ToggleButton>
-            <ToggleButton value={WeightUnit.kgs}>KGs</ToggleButton>
-          </ToggleButtonGroup>
 
-        </div>
-        <div className="barbell-box">
-          <ToggleButtonGroup color='primary' exclusive value={barbell} onChange={newBarbell}>
-            {[...barbells.keys()].map(bar => (<ToggleButton value={bar}>{barbells.get(bar)!.name}</ToggleButton>))}
-          </ToggleButtonGroup>
-        </div>
         <div className='input-box'>
           <div className='input-weight-box'>
             <TextField type='number'
@@ -147,17 +148,19 @@ function App() {
               label='Input Weight'
               value={inputWeight}
               onChange={newTargetWeight}
+              sx={{ pr: '0px' }}
               InputProps={{
-                endAdornment: <InputAdornment position='end'>{inputWeightUnit}</InputAdornment>
+                endAdornment: (
+                  <StyledToggleButtonGroup color='primary' exclusive value={inputWeightUnit} onChange={newTargetWeightUnit}>
+                    <ToggleButton value={WeightUnit.lbs}>LBs</ToggleButton>
+                    <ToggleButton value={WeightUnit.kgs}>KGs</ToggleButton>
+                  </StyledToggleButtonGroup>
+                )
               }}
             />
-            <ToggleButtonGroup color='primary' exclusive value={inputWeightUnit} onChange={newTargetWeightUnit}>
-              <ToggleButton value={WeightUnit.lbs}>LBs</ToggleButton>
-              <ToggleButton value={WeightUnit.kgs}>KGs</ToggleButton>
-            </ToggleButtonGroup>
           </div>
           <div className='input-weight-adjust-box'>
-            <ButtonGroup variant='contained'>
+            <ButtonGroup variant='outlined' size='medium' color='primary' sx={{borderColor: 'gray'}}>
               <Button onClick={() => adjustWeight(-10)}>- 10</Button>
               <Button onClick={() => adjustWeight(-5)}>- 5</Button>
               <Button onClick={() => adjustWeight(5)}>+ 5</Button>
@@ -166,12 +169,35 @@ function App() {
           </div>
         </div>
 
-        <div className='plates-box'>
-          {plates.map(p => (<Chip label={p.weight} />))}
+        <Divider><Typography variant='body2'>Plates</Typography></Divider>
+        <div className='plates-container-box'>
+          <div className='plates-box'>
+            {plates.map(p => (<Chip label={p.weight} />))}
+          </div>
+          <div className='plates-unit-box'>
+            <ToggleButtonGroup color='primary' exclusive value={availableWeightUnit} onChange={newAvailableWeightUnit}>
+              <ToggleButton value={WeightUnit.lbs}>LBs</ToggleButton>
+              <ToggleButton value={WeightUnit.kgs}>KGs</ToggleButton>
+            </ToggleButtonGroup>
+          </div>
         </div>
+
+
+        {/* <div className="options-box">
+            <div className="barbell-box">
+              <Typography variant='body1'>
+                Barbell Type
+              </Typography>
+
+              <ToggleButtonGroup color='primary' exclusive value={barbell} onChange={newBarbell}>
+                {[...barbells.keys()].map(bar => (<ToggleButton value={bar}>{barbells.get(bar)!.name}</ToggleButton>))}
+              </ToggleButtonGroup>
+            </div>
+        </div> */}
+
       </Grid>
-      <Grid xs></Grid>
     </Grid>
+
   );
 }
 
