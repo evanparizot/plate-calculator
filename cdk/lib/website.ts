@@ -61,10 +61,18 @@ export class WebsiteStack extends Stack {
       ],
     });
 
+    const target = RecordTarget.fromAlias(new CloudFrontTarget(distribution));
+
+    new ARecord(this, 'ARecord', {
+      zone,
+      recordName: siteDomain,
+      target
+    })
+
     new AaaaRecord(this, 'AAAARecord', {
       zone: zone,
       recordName: siteDomain,
-      target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
+      target
     });
 
     new BucketDeployment(this, 'BucketDeployment', {
