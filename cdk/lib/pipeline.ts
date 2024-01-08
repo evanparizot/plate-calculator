@@ -37,7 +37,7 @@ export class PipelineStack extends Stack {
 
         pipeline.addStage(new WebsiteStage(this, 'Prod', {
             env: PROD,
-            domain: 'platecalculator.net'
+            domain: 'www.platecalculator.net'
         }));
     }
 }
