@@ -1,9 +1,9 @@
 {
-  "hosted-zone:account=767397943677:domainName=beta.platecalculator.net:region=us-east-2": {
+  "hosted-zone:account=767397943677:domainName=beta.platecalculator.net:region=us-east-1": {
     "Id": "/hostedzone/Z02495981D206I1F2NCT7",
     "Name": "beta.platecalculator.net."
   },
-  "hosted-zone:account=471112852820:domainName=platecalculator.net:region=us-east-2": {
+  "hosted-zone:account=471112852820:domainName=platecalculator.net:region=us-east-1": {
     "Id": "/hostedzone/Z04964822YG3WW3VL8VS6",
     "Name": "platecalculator.net."
   }
