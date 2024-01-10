@@ -60,7 +60,7 @@ function App() {
   const [inputWeightUnit, setInputWeightUnit] = useState<WeightUnit>(WeightUnit.lbs);
   const [availableWeightUnit, setAvailableWeightUnit] = useState<WeightUnit>(WeightUnit.lbs);
   const [barbell, setBarbell] = useState<Barbell>(Barbell.STANDARD);
-  const [plates, setPlates] = useState<PlateInformation[]>([]);
+  const [plates, setPlates] = useState<Map<PlateInformation, number>>(new Map());
 
   const newTargetWeight = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputWeight(parseInt(event.target.value));
@@ -98,8 +98,8 @@ function App() {
     },
   }));
 
-  const calculate = (target: number, plates: PlateInformation[]): PlateInformation[] => {
-    let res: PlateInformation[] = [];
+  const calculate = (target: number, plates: PlateInformation[]): Map<PlateInformation, number> => {
+    let res: Map<PlateInformation, number> = new Map();
     let w: number = target;
 
     console.log('Input Weight: ' + w);
@@ -111,7 +111,7 @@ function App() {
         let rounded = Math.floor(mod);
 
         for (let i = 0; i < rounded; i++) {
-          res.push(p)
+          res.get(p) ? res.set(p, res.get(p)! + 1) : res.set(p, 1);
         }
 
         w = w - (rounded * p.weight);
@@ -169,10 +169,15 @@ function App() {
           </div>
         </div>
 
-        <Divider><Typography variant='body2'>Plates</Typography></Divider>
+        <Divider><Typography variant='body2'>Plates Per Side</Typography></Divider>
         <div className='plates-container-box'>
           <div className='plates-box'>
-            {plates.map(p => (<Chip label={p.weight} />))}
+            {[...plates.keys()].map(plate => (
+              <div>
+                  <Chip label={plate.weight}/>
+                  {' x' + plates.get(plate)}
+                </div>
+            ))}
           </div>
           <div className='plates-unit-box'>
             <ToggleButtonGroup color='primary' exclusive value={availableWeightUnit} onChange={newAvailableWeightUnit}>

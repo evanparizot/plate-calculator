@@ -23,8 +23,6 @@ export class PipelineStack extends Stack {
                     'npm install -g aws-cdk',
                     'npm run build',
                     'cdk synth',
-                    'ls',
-                    'pwd'
                 ],
                 primaryOutputDirectory: 'cdk/cdk.out',
             })
