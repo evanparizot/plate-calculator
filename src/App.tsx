@@ -84,7 +84,7 @@ function App() {
 
   const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     '& .MuiToggleButtonGroup-grouped': {
-      margin: theme.spacing(0.5),
+      // margin: theme.spacing(0.5),
       border: 0,
       '&.Mui-disabled': {
         border: 0,
@@ -102,9 +102,6 @@ function App() {
     let res: Map<PlateInformation, number> = new Map();
     let w: number = target;
 
-    console.log('Input Weight: ' + w);
-    console.log('Plates: ' + plates);
-
     plates.forEach(p => {
       const mod = w / p.weight;
       if (mod >= 1) {
@@ -117,8 +114,6 @@ function App() {
         w = w - (rounded * p.weight);
       }
     });
-
-    console.log(res);
 
     return res;
   }
@@ -148,7 +143,8 @@ function App() {
               label='Input Weight'
               value={inputWeight}
               onChange={newTargetWeight}
-              sx={{ pr: '0px' }}
+              fullWidth
+              sx={{ pr: '0' }}
               InputProps={{
                 endAdornment: (
                   <StyledToggleButtonGroup color='primary' exclusive value={inputWeightUnit} onChange={newTargetWeightUnit}>

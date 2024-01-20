@@ -30,6 +30,12 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+
+  .plates-box {
+    div {
+      margin-bottom: 1px;
+    }
+  }
 }
 
 input::-webkit-outer-spin-button,
