@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Accordion, Box, Button, ButtonGroup, Chip, Divider, Grid, InputAdornment, Paper, TextField, ThemeProvider, ToggleButton, ToggleButtonGroup, Typography, styled } from '@mui/material';
-
+import { Button, ButtonGroup, Card, Chip, Divider, Grid, InputAdornment, List, ListItem, ListItemIcon, ListItemText, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import ScaleIcon from '@mui/icons-material/Scale';
 import './App.scss';
 
 function App() {
@@ -53,6 +53,7 @@ function App() {
       { weight: 2.5, color: '#000000' },
       { weight: 1.25, color: '#b9b9bd' },
       { weight: .5, color: '#b9b9bd' },
+      { weight: .25, color: '#b9b9bd' },
     ]]
   ]);
 
@@ -82,21 +83,9 @@ function App() {
     setInputWeight(inputWeight + adjustment);
   }
 
-  const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
-    '& .MuiToggleButtonGroup-grouped': {
-      // margin: theme.spacing(0.5),
-      border: 0,
-      '&.Mui-disabled': {
-        border: 0,
-      },
-      '&:not(:first-of-type)': {
-        borderRadius: theme.shape.borderRadius,
-      },
-      '&:first-of-type': {
-        borderRadius: theme.shape.borderRadius,
-      },
-    },
-  }));
+  const convert = (weight: number, unit: WeightUnit) => {
+    return unit === WeightUnit.lbs ? weight / 2.205 : weight * 2.205
+  }
 
   const calculate = (target: number, plates: PlateInformation[]): Map<PlateInformation, number> => {
     let res: Map<PlateInformation, number> = new Map();
@@ -143,20 +132,21 @@ function App() {
               label='Input Weight'
               value={inputWeight}
               onChange={newTargetWeight}
+              className='input-weight-text-field'
               fullWidth
-              sx={{ pr: '0' }}
               InputProps={{
                 endAdornment: (
-                  <StyledToggleButtonGroup color='primary' exclusive value={inputWeightUnit} onChange={newTargetWeightUnit}>
-                    <ToggleButton value={WeightUnit.lbs}>LBs</ToggleButton>
-                    <ToggleButton value={WeightUnit.kgs}>KGs</ToggleButton>
-                  </StyledToggleButtonGroup>
+                  <InputAdornment position='end'>{inputWeightUnit}</InputAdornment>
                 )
               }}
             />
+            <ToggleButtonGroup color='primary' exclusive value={inputWeightUnit} onChange={newTargetWeightUnit}>
+              <ToggleButton value={WeightUnit.lbs}>LBs</ToggleButton>
+              <ToggleButton value={WeightUnit.kgs}>KGs</ToggleButton>
+            </ToggleButtonGroup>
           </div>
           <div className='input-weight-adjust-box'>
-            <ButtonGroup variant='outlined' size='medium' color='primary' sx={{borderColor: 'gray'}}>
+            <ButtonGroup variant='outlined' size='medium' color='primary' sx={{ borderColor: 'gray' }}>
               <Button onClick={() => adjustWeight(-10)}>- 10</Button>
               <Button onClick={() => adjustWeight(-5)}>- 5</Button>
               <Button onClick={() => adjustWeight(5)}>+ 5</Button>
@@ -165,14 +155,39 @@ function App() {
           </div>
         </div>
 
+        <Divider><Typography variant='body2'>Weight</Typography></Divider>
+        <div className='info-container-box'>
+
+          <div className="info-input-box">
+            {/* <h3>Input</h3> */}
+            <List>
+              <ListItem disablePadding>
+                <ListItemIcon>
+                  <ScaleIcon />
+                </ListItemIcon>
+                <ListItemText primary={(inputWeightUnit === WeightUnit.kgs ? convert(inputWeight, inputWeightUnit).toFixed(2) : inputWeight) + ' ' + WeightUnit.lbs} />
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemIcon>
+                  <ScaleIcon />
+                </ListItemIcon>
+                <ListItemText primary={(inputWeightUnit === WeightUnit.lbs ? convert(inputWeight, inputWeightUnit).toFixed(2) : inputWeight) + ' ' + WeightUnit.kgs} />
+              </ListItem>
+            </List>
+          </div>
+          <div className=''>
+
+          </div>
+        </div>
+
         <Divider><Typography variant='body2'>Plates Per Side</Typography></Divider>
         <div className='plates-container-box'>
           <div className='plates-box'>
             {[...plates.keys()].map(plate => (
               <div>
-                  <Chip label={plate.weight}/>
-                  {' x' + plates.get(plate)}
-                </div>
+                <Chip label={plate.weight} />
+                {' x' + plates.get(plate)}
+              </div>
             ))}
           </div>
           <div className='plates-unit-box'>

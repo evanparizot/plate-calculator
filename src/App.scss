@@ -16,6 +16,14 @@
 
   .input-weight-box {
     margin-left: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .input-weight-text-field {
+      padding-right: 1rem;
+    }
+
   }
 
   .input-weight-adjust-box {
@@ -26,9 +34,10 @@
 }
 
 .plates-container-box {
+  margin-top: 1rem;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: start;
   justify-content: space-between;
 
   .plates-box {
