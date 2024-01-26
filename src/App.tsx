@@ -62,6 +62,7 @@ function App() {
   const [availableWeightUnit, setAvailableWeightUnit] = useState<WeightUnit>(WeightUnit.lbs);
   const [barbell, setBarbell] = useState<Barbell>(Barbell.STANDARD);
   const [plates, setPlates] = useState<Map<PlateInformation, number>>(new Map());
+  const [actualWeight, setActualWeight] = useState<number>(0);
 
   const newTargetWeight = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputWeight(parseInt(event.target.value));
@@ -113,7 +114,14 @@ function App() {
     let finalConvertedWeight = availableWeightUnit === WeightUnit.kgs ? dividedWeight / 2.205 : dividedWeight;
     const ans = calculate(finalConvertedWeight, platesMap.get(availableWeightUnit)!);
 
+    const barbellWeight = barbells.get(barbell)?.weight!;
+    const actual = Array.from(ans)
+        .map(([k, v]) => k.weight * v)
+        .reduce((a, c) => a + c, 0) * 2 + (availableWeightUnit === WeightUnit.lbs ? barbellWeight : convert(barbellWeight, WeightUnit.lbs));
+
     setPlates(ans);
+    setActualWeight(actual);
+
   }, [inputWeight, inputWeightUnit, availableWeightUnit, barbell]);
 
   return (
@@ -158,8 +166,8 @@ function App() {
         <Divider><Typography variant='body2'>Weight</Typography></Divider>
         <div className='info-container-box'>
 
-          <div className="info-input-box">
-            {/* <h3>Input</h3> */}
+          <div className="info-target-box">
+            <Typography variant='body2'>Target</Typography>
             <List>
               <ListItem disablePadding>
                 <ListItemIcon>
@@ -175,8 +183,22 @@ function App() {
               </ListItem>
             </List>
           </div>
-          <div className=''>
-
+          <div className='info-actual-box'>
+            <Typography variant='body2'>Actual</Typography>
+            <List>
+              <ListItem disablePadding>
+                <ListItemIcon>
+                  <ScaleIcon />
+                </ListItemIcon>
+                <ListItemText primary={(availableWeightUnit === WeightUnit.kgs ? convert(actualWeight, availableWeightUnit).toFixed(2) : actualWeight.toFixed(2)) + ' ' + WeightUnit.lbs} />
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemIcon>
+                  <ScaleIcon />
+                </ListItemIcon>
+                <ListItemText primary={(availableWeightUnit === WeightUnit.lbs? convert(actualWeight, availableWeightUnit).toFixed(2) : actualWeight.toFixed(2)) + ' ' + WeightUnit.kgs} />
+              </ListItem>
+            </List>
           </div>
         </div>
 
