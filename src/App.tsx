@@ -1,160 +1,121 @@
-import React, { useEffect, useState } from 'react';
-import { Button, ButtonGroup, Card, Chip, Divider, Grid, InputAdornment, List, ListItem, ListItemIcon, ListItemText, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import ScaleIcon from '@mui/icons-material/Scale';
-import './App.scss';
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  ButtonGroup,
+  Chip,
+  Divider,
+  Grid,
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
+import ScaleIcon from "@mui/icons-material/Scale";
+import "./App.scss";
+import { Unit } from "./model/unit";
+import { Barbell } from "./model/barbell";
+import { PlateDetails } from "./model/plate";
+import { calculate } from "./functions/calculate";
+import { convert } from "./functions/convert";
+
+interface ActualWeight {
+  pounds: number;
+  kilograms: number
+}
 
 function App() {
-  enum WeightUnit {
-    lbs = 'lbs',
-    kgs = 'kgs'
-  }
-
-  enum Barbell {
-    STANDARD,
-    STANDARD_THICK,
-    SAFETY,
-    SWISS,
-    EZ
-  }
-
-  interface BarbellInformation {
-    name: string;
-    weight: number;
-  }
-
-  const barbells: Map<Barbell, BarbellInformation> = new Map([
-    [Barbell.STANDARD, { name: 'Straight', weight: 45 }],
-    [Barbell.STANDARD_THICK, { name: 'Straight (Heavy)', weight: 55 }],
-    [Barbell.SAFETY, { name: 'Safety', weight: 60 }],
-    [Barbell.SWISS, { name: 'Swiss', weight: 35 }],
-    [Barbell.EZ, { name: 'EZ', weight: 15 }],
-  ]);
-
-  interface PlateInformation {
-    weight: number;
-    color: string;
-  }
-
-  const platesMap: Map<WeightUnit, PlateInformation[]> = new Map([
-    [WeightUnit.lbs, [
-      { weight: 45, color: '#000000' },
-      { weight: 35, color: '#000000' },
-      { weight: 25, color: '#000000' },
-      { weight: 10, color: '#000000' },
-      { weight: 5, color: '#000000' },
-      { weight: 2.5, color: '#000000' }
-    ]],
-    [WeightUnit.kgs, [
-      { weight: 25, color: '#fc0303' },
-      { weight: 20, color: '#0356fc' },
-      { weight: 15, color: '#fcd303' },
-      { weight: 10, color: '#0ea144' },
-      { weight: 5, color: '#ffffff' },
-      { weight: 2.5, color: '#000000' },
-      { weight: 1.25, color: '#b9b9bd' },
-      { weight: .5, color: '#b9b9bd' },
-      { weight: .25, color: '#b9b9bd' },
-    ]]
-  ]);
-
   const [inputWeight, setInputWeight] = useState<number>(185);
-  const [inputWeightUnit, setInputWeightUnit] = useState<WeightUnit>(WeightUnit.lbs);
-  const [availableWeightUnit, setAvailableWeightUnit] = useState<WeightUnit>(WeightUnit.lbs);
+  const [inputUnit, setInputUnit] = useState<Unit>(Unit.lbs);
+  const [availableUnit, setAvailableUnit] = useState<Unit>(Unit.lbs);
   const [barbell, setBarbell] = useState<Barbell>(Barbell.STANDARD);
-  const [plates, setPlates] = useState<Map<PlateInformation, number>>(new Map());
-  const [actualWeight, setActualWeight] = useState<number>(0);
+  const [plates, setPlates] = useState<Map<PlateDetails, number>>(new Map());
+  const [actualWeight, setActualWeight] = useState<ActualWeight>({ pounds: 0, kilograms: 0 });
 
   const newTargetWeight = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputWeight(parseInt(event.target.value));
-  }
+  };
 
-  const newTargetWeightUnit = (_event: any, newValue: WeightUnit) => {
-    newValue !== null && setInputWeightUnit(newValue);
-  }
+  const newTargetUnit = (_event: any, newValue: Unit) => {
+    newValue !== null && setInputUnit(newValue);
+  };
 
-  const newAvailableWeightUnit = (_event: any, newValue: WeightUnit) => {
-    newValue !== null && setAvailableWeightUnit(newValue);
-  }
+  const newAvailableUnit = (_event: any, newValue: Unit) => {
+    newValue !== null && setAvailableUnit(newValue);
+  };
 
   const newBarbell = (_event: any, newValue: Barbell) => {
     newValue !== null && setBarbell(newValue);
-  }
+  };
 
   const adjustWeight = (adjustment: number) => {
     setInputWeight(inputWeight + adjustment);
-  }
-
-  const convert = (weight: number, unit: WeightUnit) => {
-    return unit === WeightUnit.lbs ? weight / 2.205 : weight * 2.205
-  }
-
-  const calculate = (target: number, plates: PlateInformation[]): Map<PlateInformation, number> => {
-    let res: Map<PlateInformation, number> = new Map();
-    let w: number = target;
-
-    plates.forEach(p => {
-      const mod = w / p.weight;
-      if (mod >= 1) {
-        let rounded = Math.floor(mod);
-
-        for (let i = 0; i < rounded; i++) {
-          res.get(p) ? res.set(p, res.get(p)! + 1) : res.set(p, 1);
-        }
-
-        w = w - (rounded * p.weight);
-      }
-    });
-
-    return res;
-  }
+  };
 
   useEffect(() => {
-    let weightInLbs = inputWeightUnit === WeightUnit.kgs ? inputWeight * 2.205 : inputWeight;
-    let dividedWeight = (weightInLbs - barbells.get(barbell)!.weight) / 2;
-    let finalConvertedWeight = availableWeightUnit === WeightUnit.kgs ? dividedWeight / 2.205 : dividedWeight;
-    const ans = calculate(finalConvertedWeight, platesMap.get(availableWeightUnit)!);
+    let target = (inputWeight - (barbell.getWeight(inputUnit))) / 2;
+    let plates = calculate(target, inputUnit, availableUnit);
+    let plateWeight = Array.from(plates).map(([k, v]) => k.weight * v)
+      .reduce((a, c) => a + c, 0) * 2
 
-    const barbellWeight = barbells.get(barbell)?.weight!;
-    const actual = Array.from(ans)
-        .map(([k, v]) => k.weight * v)
-        .reduce((a, c) => a + c, 0) * 2 + (availableWeightUnit === WeightUnit.lbs ? barbellWeight : convert(barbellWeight, WeightUnit.lbs));
+    let total = plateWeight + barbell.getWeight(availableUnit);
 
-    setPlates(ans);
+    let actual: ActualWeight = availableUnit === Unit.lbs ? 
+        { pounds: total, kilograms: convert(total, Unit.lbs)} : 
+        { pounds: convert(total, Unit.kgs), kilograms: total };
+
+    setPlates(plates);
     setActualWeight(actual);
-
-  }, [inputWeight, inputWeightUnit, availableWeightUnit, barbell]);
+  }, [inputWeight, inputUnit, availableUnit, barbell]);
 
   return (
-    <Grid container spacing={2} alignItems={'center'} justifyContent={'center'}>
+    <Grid container spacing={2} alignItems={"center"} justifyContent={"center"}>
       <Grid item xs={10} sm={6} md={6} lg={4} xl={4}>
-        <div className='title'>
-          <Typography variant='h2' gutterBottom>
+        <div className="title">
+          <Typography variant="h2" gutterBottom>
             Plate Calculator
           </Typography>
         </div>
 
-        <div className='input-box'>
-          <div className='input-weight-box'>
-            <TextField type='number'
-              variant='outlined'
-              label='Input Weight'
+        <div className="input-box">
+          <div className="input-weight-box">
+            <TextField
+              type="number"
+              variant="outlined"
+              label="Input Weight"
               value={inputWeight}
               onChange={newTargetWeight}
-              className='input-weight-text-field'
+              className="input-weight-text-field"
               fullWidth
               InputProps={{
                 endAdornment: (
-                  <InputAdornment position='end'>{inputWeightUnit}</InputAdornment>
-                )
+                  <InputAdornment position="end">
+                    {inputUnit}
+                  </InputAdornment>
+                ),
               }}
             />
-            <ToggleButtonGroup color='primary' exclusive value={inputWeightUnit} onChange={newTargetWeightUnit}>
-              <ToggleButton value={WeightUnit.lbs}>LBs</ToggleButton>
-              <ToggleButton value={WeightUnit.kgs}>KGs</ToggleButton>
+            <ToggleButtonGroup
+              color="primary"
+              exclusive
+              value={inputUnit}
+              onChange={newTargetUnit}
+            >
+              <ToggleButton value={Unit.lbs}>LBs</ToggleButton>
+              <ToggleButton value={Unit.kgs}>KGs</ToggleButton>
             </ToggleButtonGroup>
           </div>
-          <div className='input-weight-adjust-box'>
-            <ButtonGroup variant='outlined' size='medium' color='primary' sx={{ borderColor: 'gray' }}>
+          <div className="input-weight-adjust-box">
+            <ButtonGroup
+              variant="outlined"
+              size="medium"
+              color="primary"
+              sx={{ borderColor: "gray" }}
+            >
               <Button onClick={() => adjustWeight(-10)}>- 10</Button>
               <Button onClick={() => adjustWeight(-5)}>- 5</Button>
               <Button onClick={() => adjustWeight(5)}>+ 5</Button>
@@ -163,63 +124,98 @@ function App() {
           </div>
         </div>
 
-        <Divider><Typography variant='body2'>Weight</Typography></Divider>
-        <div className='info-container-box'>
-
+        <Divider>
+          <Typography variant="body2">Weight</Typography>
+        </Divider>
+        <div className="info-container-box">
           <div className="info-target-box">
-            <Typography variant='body2'>Target</Typography>
+            <Typography variant="body2">Target</Typography>
             <List>
               <ListItem disablePadding>
                 <ListItemIcon>
                   <ScaleIcon />
                 </ListItemIcon>
-                <ListItemText primary={(inputWeightUnit === WeightUnit.kgs ? convert(inputWeight, inputWeightUnit).toFixed(2) : inputWeight) + ' ' + WeightUnit.lbs} />
+                <ListItemText
+                  primary={
+                    (inputUnit === Unit.kgs
+                      ? convert(inputWeight, inputUnit).toFixed(2)
+                      : inputWeight) +
+                    " " +
+                    Unit.lbs
+                  }
+                />
               </ListItem>
               <ListItem disablePadding>
                 <ListItemIcon>
                   <ScaleIcon />
                 </ListItemIcon>
-                <ListItemText primary={(inputWeightUnit === WeightUnit.lbs ? convert(inputWeight, inputWeightUnit).toFixed(2) : inputWeight) + ' ' + WeightUnit.kgs} />
+                <ListItemText
+                  primary={
+                    (inputUnit === Unit.lbs
+                      ? convert(inputWeight, inputUnit).toFixed(2)
+                      : inputWeight) +
+                    " " +
+                    Unit.kgs
+                  }
+                />
               </ListItem>
             </List>
           </div>
-          <div className='info-actual-box'>
-            <Typography variant='body2'>Actual</Typography>
+          <div className="info-actual-box">
+            <Typography variant="body2">Actual</Typography>
             <List>
               <ListItem disablePadding>
                 <ListItemIcon>
                   <ScaleIcon />
                 </ListItemIcon>
-                <ListItemText primary={(availableWeightUnit === WeightUnit.kgs ? convert(actualWeight, availableWeightUnit).toFixed(2) : actualWeight.toFixed(2)) + ' ' + WeightUnit.lbs} />
+                <ListItemText
+                  primary={
+                    actualWeight.pounds.toFixed(2) + 
+                    " " +
+                    Unit.lbs
+                  }
+                />
               </ListItem>
               <ListItem disablePadding>
                 <ListItemIcon>
                   <ScaleIcon />
                 </ListItemIcon>
-                <ListItemText primary={(availableWeightUnit === WeightUnit.lbs? convert(actualWeight, availableWeightUnit).toFixed(2) : actualWeight.toFixed(2)) + ' ' + WeightUnit.kgs} />
+                <ListItemText
+                  primary={
+                    actualWeight.kilograms.toFixed(2) + 
+                    " " +
+                    Unit.kgs
+                  }
+                />
               </ListItem>
             </List>
           </div>
         </div>
 
-        <Divider><Typography variant='body2'>Plates Per Side</Typography></Divider>
-        <div className='plates-container-box'>
-          <div className='plates-box'>
-            {[...plates.keys()].map(plate => (
+        <Divider>
+          <Typography variant="body2">Plates Per Side</Typography>
+        </Divider>
+        <div className="plates-container-box">
+          <div className="plates-box">
+            {[...plates.keys()].map((plate) => (
               <div>
                 <Chip label={plate.weight} />
-                {' x' + plates.get(plate)}
+                {" x" + plates.get(plate)}
               </div>
             ))}
           </div>
-          <div className='plates-unit-box'>
-            <ToggleButtonGroup color='primary' exclusive value={availableWeightUnit} onChange={newAvailableWeightUnit}>
-              <ToggleButton value={WeightUnit.lbs}>LBs</ToggleButton>
-              <ToggleButton value={WeightUnit.kgs}>KGs</ToggleButton>
+          <div className="plates-unit-box">
+            <ToggleButtonGroup
+              color="primary"
+              exclusive
+              value={availableUnit}
+              onChange={newAvailableUnit}
+            >
+              <ToggleButton value={Unit.lbs}>LBs</ToggleButton>
+              <ToggleButton value={Unit.kgs}>KGs</ToggleButton>
             </ToggleButtonGroup>
           </div>
         </div>
-
 
         {/* <div className="options-box">
             <div className="barbell-box">
@@ -232,10 +228,8 @@ function App() {
               </ToggleButtonGroup>
             </div>
         </div> */}
-
       </Grid>
     </Grid>
-
   );
 }
 
